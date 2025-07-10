@@ -5,29 +5,14 @@
 
 #define LOG(msg) std::cout << msg << std::endl;
 
-class TestClass {
-
-public:
-    void myfunc(int one, int two) {
-        int three = 0;
-        while (three < two) {
-            three += 1;
-        }
-
-        std::cout << "One: " << one << " Two: " << two << " Three: " << three << std::endl;
-    }
-
-};
-
-typedef void(__thiscall* OriginalFunction)(void* This, int one, int two);
+typedef int(__stdcall* OriginalFunction)(HWND hwnd, LPCSTR text, LPCSTR caption, UINT type);
 OriginalFunction fpOriginal = NULL;
 
-void __fastcall HookedFunction(void* This, void* EDX_, int one, int two) {
+int __stdcall HookedFunction(HWND hwnd, LPCSTR text, LPCSTR caption, UINT type) {
 
     std::cout << "Hooked" << std::endl;
-    std::cout << "HEHEHEdd ddd d d" << one << " " << two << std::endl;
-
-    fpOriginal(This, one, two);
+    
+    return fpOriginal(hwnd, "Modified", "Modified", type);
 }
 
 
@@ -46,20 +31,15 @@ void disable(HMODULE instance, FILE* f) {
 
 int main()
 {
-    TestClass testClass;
 
-    float test = 0.44;
-    float* ptr = &test;
-
-    void (TestClass:: * funcPtr)(int, int) = &TestClass::myfunc;
-    void* funcAddr = *(void**)&funcPtr;
+    void* funcAddr = &MessageBoxA;
     std::cout << funcAddr << std::endl;
-    LongLegs hook(funcAddr, &HookedFunction, &fpOriginal, 6);
+    LongLegs hook(funcAddr, &HookedFunction, &fpOriginal, 5);
     fpOriginal = (OriginalFunction)hook.getTrampoline();
 
-    testClass.myfunc(2, 34);
-    testClass.myfunc(2, 12);
-    testClass.myfunc(2, 5);
+    MessageBoxA(NULL, "Not modified", "Not modified", MB_OK);
+    MessageBoxA(NULL, "Not modified", "Not modified", MB_OK);
+    //hook.clear();
 
     //MessageBoxA(NULL, "Test", "test", MB_OK);
    //MessageBoxA(NULL, "Test", "test", MB_OK);

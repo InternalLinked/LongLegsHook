@@ -146,6 +146,9 @@ LPVOID LongLegs::trampolineHook() {
 
     memcpy_s(trampoline, this->len, targetFunction, this->len);
 
+	/*Im aware that this instructions can cause crashes in x64. But i have currently no time. The fix would be to push r10
+	onto the stack and releasing it after the jump. But this would increase the size of the jmp payload (jmpInstruction) and also the 
+	anmount of corrupted bytes that need to get saved when patching the payload. Therefore i might just completly rewrite this. All of this is really old*/
     std::uint8_t jmpInstruction[13] = {
         0x49, 0xBA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //mov r10, addr
         0x41, 0xFF, 0xE2 //jmp r10
